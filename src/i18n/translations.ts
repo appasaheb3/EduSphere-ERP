@@ -16,6 +16,22 @@ export interface Translations {
   keepSignedIn: string;
   loginButton: string;
   registerStudent: string;
+  activeCampus: string;
+  addOrganization: string;
+  selectTheme: string;
+  themeTitle: string;
+  themeSubtitle: string;
+  collegeName: string;
+  collegeCode: string;
+  collegeType: string;
+  tagline: string;
+  location: string;
+  establishedYear: string;
+  accreditation: string;
+  crestIcon: string;
+  saveCollege: string;
+  switchCollege: string;
+  previewTheme: string;
   // Navigation
   navDashboard: string;
   navStudents: string;
@@ -67,21 +83,37 @@ export interface Translations {
 
 export const translations: Record<Language, Translations> = {
   en: {
-    appName: 'Oakridge Academy ERP',
-    campusCloud: 'Campus Management Cloud',
+    appName: 'EduSphere-ERP',
+    campusCloud: 'Multi-Tenant Campus Cloud',
     academicTerm: '2026-27 Term 1',
     liveCampus: 'Live Campus System',
     switchPerspective: 'Switch Perspective',
     reaBlueprint: 'REA Architecture Specs',
     signOut: 'Sign Out',
-    signInTitle: 'Sign In to Your Campus Portal',
+    signInTitle: 'Sign In to EduSphere-ERP',
     signInSubtitle: 'Select your role preset for instant 1-click access, or log in with credentials.',
     quickLogin: '1-Click Fast Login by Role:',
-    emailPlaceholder: 'name@oakridge.edu',
+    emailPlaceholder: 'name@edusphere.edu',
     passwordPlaceholder: '••••••••••••',
     keepSignedIn: 'Keep me signed in on this workstation',
     loginButton: 'Authenticate & Access Dashboard',
     registerStudent: 'Register New Student',
+    activeCampus: 'Active Campus / College',
+    addOrganization: 'Add College / Organization',
+    selectTheme: 'Campus Brand Theme',
+    themeTitle: 'Select Organization Visual Theme',
+    themeSubtitle: 'Each college or organization has its own distinctive branding, badge styling, and color theme.',
+    collegeName: 'Institution / College Name',
+    collegeCode: 'Institutional Code',
+    collegeType: 'Institution Type',
+    tagline: 'Motto / Tagline',
+    location: 'Campus City / Location',
+    establishedYear: 'Established Year',
+    accreditation: 'Accreditation / Affiliation',
+    crestIcon: 'Emblem Crest Icon',
+    saveCollege: 'Register College & Apply Theme',
+    switchCollege: 'Switch Active Campus',
+    previewTheme: 'Theme Visual Palette Preview',
     // Navigation
     navDashboard: 'Campus Overview',
     navStudents: 'Students & Records',
@@ -131,39 +163,55 @@ export const translations: Record<Language, Translations> = {
     timetable: 'Bell Schedule'
   },
   hi: {
-    appName: 'ओकरिज अकादमी ईआरपी',
-    campusCloud: 'परिसर प्रबंधन क्लाउड',
+    appName: 'एडुस्फीयर-ईआरपी',
+    campusCloud: 'मल्टी-टेनेंट कैंपस क्लाउड',
     academicTerm: '२०२६-२७ सत्र १',
     liveCampus: 'लाइव कैंपस प्रणाली',
     switchPerspective: 'भूमिका बदलें',
-    reaBlueprint: 'आरईए आर्किटेक्चर विनिर्देश',
+    reaBlueprint: 'आरईए आर्किटेक्चर विवरण',
     signOut: 'लॉग आउट',
-    signInTitle: 'अपने कैंपस पोर्टल में साइन इन करें',
+    signInTitle: 'एडुस्फीयर-ईआरपी में लॉगिन करें',
     signInSubtitle: 'त्वरित १-क्लिक पहुंच के लिए अपनी भूमिका चुनें या क्रेडेंशियल दर्ज करें।',
-    quickLogin: 'भूमिका अनुसार १-क्लिक त्वरित लॉगिन:',
-    emailPlaceholder: 'name@oakridge.edu',
+    quickLogin: 'भूमिका द्वारा त्वरित १-क्लिक लॉगिन:',
+    emailPlaceholder: 'name@edusphere.edu',
     passwordPlaceholder: '••••••••••••',
-    keepSignedIn: 'मुझे इस सिस्टम पर साइन इन रखें',
+    keepSignedIn: 'मुझे इस वर्कस्टेशन पर साइन इन रखें',
     loginButton: 'प्रमाणित करें और डैशबोर्ड खोलें',
     registerStudent: 'नया छात्र पंजीकृत करें',
+    activeCampus: 'सक्रिय कैंपस / कॉलेज',
+    addOrganization: 'नया कॉलेज / संस्थान जोड़ें',
+    selectTheme: 'कैंपस ब्रांड थीम',
+    themeTitle: 'संस्थान के लिए दृश्य रंग थीम चुनें',
+    themeSubtitle: 'प्रत्येक कॉलेज या संस्था की अपनी विशिष्ट ब्रांडिंग, बैज और रंग थीम होती है।',
+    collegeName: 'संस्थान / कॉलेज का नाम',
+    collegeCode: 'संस्था कोड',
+    collegeType: 'संस्था का प्रकार',
+    tagline: 'आदर्श वाक्य / टैगलाइन',
+    location: 'कैंपस शहर / स्थान',
+    establishedYear: 'स्थापना वर्ष',
+    accreditation: 'मान्यता / संबद्धता',
+    crestIcon: 'प्रतीक चिन्ह (क्रेस्ट)',
+    saveCollege: 'कॉलेज जोड़ें और थीम लागू करें',
+    switchCollege: 'सक्रिय कॉलेज बदलें',
+    previewTheme: 'थीम रंग पूर्वावलोकन',
     // Navigation
-    navDashboard: 'परिसर विहंगावलोकन',
-    navStudents: 'विद्यार्थी और अभिलेख',
+    navDashboard: 'कैंपस अवलोकन',
+    navStudents: 'छात्र और रिकॉर्ड',
     navStaff: 'कर्मचारी और संकाय',
     navAttendance: 'दैनिक उपस्थिति (रोल कॉल)',
-    navAccounting: 'लेखाकार और किस्त शुल्क',
-    navExams: 'परीक्षाएं और परिणाम',
-    navScheduleExam: 'परीक्षा समय सारणी',
+    navAccounting: 'लेखापाल और किस्त शुल्क',
+    navExams: 'परीक्षा और परिणाम',
+    navScheduleExam: 'परीक्षा समय सारिणी',
     navCertificates: 'प्रमाणपत्र और टीसी',
     navLiveLecture: 'ऑनलाइन लाइव वीडियो व्याख्यान',
-    navHomework: 'गृहकार्य और कार्य',
-    navLogistics: 'परिवहन, पुस्तकालय और छुट्टियां',
+    navHomework: 'गृहकार्य और असाइनमेंट',
+    navLogistics: 'परिवहन, पुस्तकालय और अवकाश',
     navNoticeBoard: 'सूचना पट्ट (परिपत्र)',
     // Roles
     roleAdmin: 'मुख्य प्रशासक',
-    roleAccountant: 'लेखापाल और बर्सर',
-    roleStaff: 'शिक्षक / प्राध्यापक',
-    roleStudent: 'छात्र / अभिभावक दृश्य',
+    roleAccountant: 'लेखापाल एवं खजांची',
+    roleStaff: 'संकाय / शिक्षक',
+    roleStudent: 'छात्र / अभिभावक पोर्टल',
     // Common terms
     present: 'उपस्थित',
     absent: 'अनुपस्थित',
@@ -195,21 +243,37 @@ export const translations: Record<Language, Translations> = {
     timetable: 'दैनिक समय-सारणी'
   },
   mr: {
-    appName: 'ओकरिज अकॅडमी ईआरपी',
-    campusCloud: 'कॅम्पस व्यवस्थापन क्लाउड',
+    appName: 'एडुस्फीअर-ईआरपी',
+    campusCloud: 'मल्टी-टॅनेन्ट कॅम्पस व्यवस्थापन क्लाउड',
     academicTerm: '२०२६-२७ सत्र १',
     liveCampus: 'थेट कॅम्पस प्रणाली',
     switchPerspective: 'भूमिका बदला',
     reaBlueprint: 'आरईए आर्किटेक्चर तपशील',
     signOut: 'बाहेर पडा (लॉग आउट)',
-    signInTitle: 'आपल्या कॅम्पस पोर्टलमध्ये प्रवेश करा',
+    signInTitle: 'एडुस्फीअर-ईआरपी मध्ये प्रवेश करा',
     signInSubtitle: 'त्वरित १-क्लिक प्रवेशासाठी आपली भूमिका निवडा किंवा क्रेडेन्शियल्स प्रविष्ट करा.',
     quickLogin: 'भूमिकांनुसार १-क्लिक जलद लॉगिन:',
-    emailPlaceholder: 'name@oakridge.edu',
+    emailPlaceholder: 'name@edusphere.edu',
     passwordPlaceholder: '••••••••••••',
     keepSignedIn: 'मला या वर्कस्टेशनवर साइन इन ठेवा',
     loginButton: 'प्रमाणित करा आणि डॅशबोर्ड उघडा',
     registerStudent: 'नवीन विद्यार्थी नोंदणी करा',
+    activeCampus: 'सक्रिय कॉलेज / कॅम्पस',
+    addOrganization: 'नवीन कॉलेज / संस्था जोडा',
+    selectTheme: 'कॅम्पस रंग थीम',
+    themeTitle: 'संस्थेसाठी दृश्य रंग थीम निवडा',
+    themeSubtitle: 'प्रत्येक कॉलेज किंवा शैक्षणिक संस्थेसाठी स्वतंत्र बोधचिन्ह व रंग थीम उपलब्ध आहे.',
+    collegeName: 'महाविद्यालय / शैक्षणिक संस्थेचे नाव',
+    collegeCode: 'संस्था कोड',
+    collegeType: 'संस्थेचा प्रकार',
+    tagline: 'ध्येयवाक्य / ब्रीदवाक्य',
+    location: 'कॅम्पस शहर / पत्ता',
+    establishedYear: 'स्थापना वर्ष',
+    accreditation: 'मान्यता / संलग्नता (NAAC/NBA)',
+    crestIcon: 'प्रतीक चिन्ह (क्रेस्ट)',
+    saveCollege: 'संस्था जोडा व थीम लागू करा',
+    switchCollege: 'सक्रिय महाविद्यालय बदला',
+    previewTheme: 'थीम रंग पॅलेट पूर्वावलोकन',
     // Navigation
     navDashboard: 'कॅम्पस विहंगावलोकन',
     navStudents: 'विद्यार्थी व नोंदी',

@@ -1,5 +1,48 @@
 export type UserRole = 'admin' | 'staff' | 'accountant' | 'student';
 
+export type ThemeColorId = 'indigo' | 'crimson' | 'emerald' | 'purple' | 'amber' | 'cyan' | 'rose' | 'teal';
+
+export interface CampusTheme {
+  id: ThemeColorId;
+  name: string;
+  paletteName: string;
+  primaryHex: string;
+  gradientFrom: string;
+  gradientTo: string;
+  accentClass: string;
+  btnPrimaryClass: string;
+  badgeBg: string;
+  badgeText: string;
+  ringClass: string;
+  borderClass: string;
+  headerBg: string;
+}
+
+export type OrganizationType =
+  | 'College / Institute'
+  | 'University Campus'
+  | 'Engineering College'
+  | 'Medical College'
+  | 'Polytechnic & Vocational'
+  | 'Autonomous Institute'
+  | 'K-12 Academy'
+  | 'Business & Law School';
+
+export interface Organization {
+  id: string;
+  name: string;
+  code: string;
+  type: OrganizationType;
+  tagline: string;
+  themeId: ThemeColorId;
+  establishedYear: number;
+  location: string;
+  accreditation: string;
+  crestIcon: string;
+  website?: string;
+  contactEmail?: string;
+}
+
 export interface AuthUser {
   id: string;
   name: string;
@@ -178,7 +221,6 @@ export interface Notice {
   content: string;
 }
 
-// Leading ERP additions
 export interface LibraryBook {
   id: string;
   title: string;

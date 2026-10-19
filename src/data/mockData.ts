@@ -12,14 +12,229 @@ import {
   LibraryBook,
   TransportRoute,
   LeaveApplication,
-  TimetablePeriod
+  TimetablePeriod,
+  Organization,
+  CampusTheme,
+  ThemeColorId
 } from '../types/erp';
+
+// Visual themes for colleges and organizations
+export const CAMPUS_THEMES: Record<ThemeColorId, CampusTheme> = {
+  indigo: {
+    id: 'indigo',
+    name: 'Royal Indigo',
+    paletteName: 'Prestige Academies & Universities',
+    primaryHex: '#4f46e5',
+    gradientFrom: 'from-indigo-600',
+    gradientTo: 'to-blue-600',
+    accentClass: 'text-indigo-400',
+    btnPrimaryClass: 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/25',
+    badgeBg: 'bg-indigo-500/15',
+    badgeText: 'text-indigo-300',
+    ringClass: 'ring-indigo-500/30 border-indigo-500/50',
+    borderClass: 'border-indigo-500/40',
+    headerBg: 'from-indigo-950/60 to-slate-900'
+  },
+  crimson: {
+    id: 'crimson',
+    name: 'Heritage Crimson',
+    paletteName: 'Engineering & Technology Institutes',
+    primaryHex: '#dc2626',
+    gradientFrom: 'from-rose-600',
+    gradientTo: 'to-red-600',
+    accentClass: 'text-rose-400',
+    btnPrimaryClass: 'bg-rose-600 hover:bg-rose-500 shadow-rose-600/25',
+    badgeBg: 'bg-rose-500/15',
+    badgeText: 'text-rose-300',
+    ringClass: 'ring-rose-500/30 border-rose-500/50',
+    borderClass: 'border-rose-500/40',
+    headerBg: 'from-rose-950/60 to-slate-900'
+  },
+  emerald: {
+    id: 'emerald',
+    name: 'University Emerald',
+    paletteName: 'Sciences, Medical & Health Colleges',
+    primaryHex: '#059669',
+    gradientFrom: 'from-emerald-600',
+    gradientTo: 'to-teal-600',
+    accentClass: 'text-emerald-400',
+    btnPrimaryClass: 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/25',
+    badgeBg: 'bg-emerald-500/15',
+    badgeText: 'text-emerald-300',
+    ringClass: 'ring-emerald-500/30 border-emerald-500/50',
+    borderClass: 'border-emerald-500/40',
+    headerBg: 'from-emerald-950/60 to-slate-900'
+  },
+  purple: {
+    id: 'purple',
+    name: 'Electric Violet',
+    paletteName: 'Polytechnics, Architecture & Design',
+    primaryHex: '#9333ea',
+    gradientFrom: 'from-purple-600',
+    gradientTo: 'to-violet-600',
+    accentClass: 'text-purple-400',
+    btnPrimaryClass: 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/25',
+    badgeBg: 'bg-purple-500/15',
+    badgeText: 'text-purple-300',
+    ringClass: 'ring-purple-500/30 border-purple-500/50',
+    borderClass: 'border-purple-500/40',
+    headerBg: 'from-purple-950/60 to-slate-900'
+  },
+  amber: {
+    id: 'amber',
+    name: 'Gold & Amber',
+    paletteName: 'Business, Management & Law Institutes',
+    primaryHex: '#d97706',
+    gradientFrom: 'from-amber-600',
+    gradientTo: 'to-yellow-600',
+    accentClass: 'text-amber-400',
+    btnPrimaryClass: 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/25',
+    badgeBg: 'bg-amber-500/15',
+    badgeText: 'text-amber-300',
+    ringClass: 'ring-amber-500/30 border-amber-500/50',
+    borderClass: 'border-amber-500/40',
+    headerBg: 'from-amber-950/60 to-slate-900'
+  },
+  cyan: {
+    id: 'cyan',
+    name: 'Oceanic Cyan',
+    paletteName: 'Modern Research, AI & STEM Campuses',
+    primaryHex: '#0891b2',
+    gradientFrom: 'from-cyan-600',
+    gradientTo: 'to-sky-600',
+    accentClass: 'text-cyan-400',
+    btnPrimaryClass: 'bg-cyan-600 hover:bg-cyan-500 shadow-cyan-600/25',
+    badgeBg: 'bg-cyan-500/15',
+    badgeText: 'text-cyan-300',
+    ringClass: 'ring-cyan-500/30 border-cyan-500/50',
+    borderClass: 'border-cyan-500/40',
+    headerBg: 'from-cyan-950/60 to-slate-900'
+  },
+  rose: {
+    id: 'rose',
+    name: 'Rose Ruby',
+    paletteName: 'Liberal Arts, Humanities & International Schools',
+    primaryHex: '#e11d48',
+    gradientFrom: 'from-rose-500',
+    gradientTo: 'to-pink-600',
+    accentClass: 'text-pink-400',
+    btnPrimaryClass: 'bg-pink-600 hover:bg-pink-500 shadow-pink-600/25',
+    badgeBg: 'bg-pink-500/15',
+    badgeText: 'text-pink-300',
+    ringClass: 'ring-pink-500/30 border-pink-500/50',
+    borderClass: 'border-pink-500/40',
+    headerBg: 'from-pink-950/60 to-slate-900'
+  },
+  teal: {
+    id: 'teal',
+    name: 'Nordic Teal',
+    paletteName: 'Autonomous Institutes & Skill Centers',
+    primaryHex: '#0d9488',
+    gradientFrom: 'from-teal-600',
+    gradientTo: 'to-emerald-600',
+    accentClass: 'text-teal-400',
+    btnPrimaryClass: 'bg-teal-600 hover:bg-teal-500 shadow-teal-600/25',
+    badgeBg: 'bg-teal-500/15',
+    badgeText: 'text-teal-300',
+    ringClass: 'ring-teal-500/30 border-teal-500/50',
+    borderClass: 'border-teal-500/40',
+    headerBg: 'from-teal-950/60 to-slate-900'
+  }
+};
+
+// Initial list of institutions / colleges
+export const INITIAL_ORGANIZATIONS: Organization[] = [
+  {
+    id: 'org-oakridge',
+    name: 'Oakridge International Academy',
+    code: 'OIA',
+    type: 'K-12 Academy',
+    tagline: 'Excellence in Academics • Integrity • Leadership',
+    themeId: 'indigo',
+    establishedYear: 1998,
+    location: 'Westside Campus, Academic District',
+    accreditation: 'Autonomous IB & CBSE Certified',
+    crestIcon: 'School',
+    website: 'https://oakridge.edusphere.edu',
+    contactEmail: 'admissions@oakridge.edu'
+  },
+  {
+    id: 'org-savitribai',
+    name: 'Pune Institute of Engineering & Technology',
+    code: 'PIET',
+    type: 'Engineering College',
+    tagline: 'Pioneering Engineering, Robotics & Applied Research',
+    themeId: 'crimson',
+    establishedYear: 2004,
+    location: 'Shivajinagar, Pune, Maharashtra',
+    accreditation: 'NBA & NAAC A++ Grade Accredited',
+    crestIcon: 'Cpu',
+    website: 'https://piet.edusphere.edu',
+    contactEmail: 'info@piet.edu.in'
+  },
+  {
+    id: 'org-greenwood',
+    name: 'Greenwood University of Health & Medical Sciences',
+    code: 'GUHS',
+    type: 'Medical College',
+    tagline: 'Advancing Medical Research & Global Healthcare Leadership',
+    themeId: 'emerald',
+    establishedYear: 1985,
+    location: 'Pinecrest Hills, Health City',
+    accreditation: 'UGC & Medical Council Recognized',
+    crestIcon: 'GraduationCap',
+    website: 'https://greenwood.edusphere.edu',
+    contactEmail: 'dean@greenwood.edu'
+  },
+  {
+    id: 'org-imperial',
+    name: 'Imperial Polytechnic & Skill Institute',
+    code: 'IPSI',
+    type: 'Polytechnic & Vocational',
+    tagline: 'Hands-on Technical Mastery & Industry Automation',
+    themeId: 'purple',
+    establishedYear: 2012,
+    location: 'Industrial Gateway, Sector 9',
+    accreditation: 'AICTE Certified Polytechnic',
+    crestIcon: 'Layers',
+    website: 'https://imperial.edusphere.edu',
+    contactEmail: 'registrar@imperial.edu'
+  },
+  {
+    id: 'org-apex',
+    name: 'Apex Global Business & Law School',
+    code: 'AGBS',
+    type: 'Business & Law School',
+    tagline: 'Developing Visionary Global Entrepreneurs & FinTech Leaders',
+    themeId: 'amber',
+    establishedYear: 2010,
+    location: 'Financial Towers, South City',
+    accreditation: 'AACSB & Bar Council Recognized',
+    crestIcon: 'DollarSign',
+    website: 'https://apex.edusphere.edu',
+    contactEmail: 'admissions@apex.edu'
+  },
+  {
+    id: 'org-cyberspace',
+    name: 'CyberSpace Research & AI Institute',
+    code: 'CRAI',
+    type: 'Autonomous Institute',
+    tagline: 'Frontier AI, Quantum Systems & Applied Computing',
+    themeId: 'cyan',
+    establishedYear: 2021,
+    location: 'Silicon Park, Innovation Zone',
+    accreditation: 'Global Research Consortium Partner',
+    crestIcon: 'Cpu',
+    website: 'https://crai.edusphere.edu',
+    contactEmail: 'research@crai.edu'
+  }
+];
 
 export const PRESET_USERS: AuthUser[] = [
   {
     id: 'usr-admin',
     name: 'Robert Thornton',
-    email: 'admin@oakridge.edu',
+    email: 'admin@edusphere.edu',
     role: 'admin',
     avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80',
     title: 'Super Administrator & Campus Director',
@@ -28,7 +243,7 @@ export const PRESET_USERS: AuthUser[] = [
   {
     id: 'usr-accountant',
     name: 'Claire Vance, CPA',
-    email: 'accountant@oakridge.edu',
+    email: 'accountant@edusphere.edu',
     role: 'accountant',
     avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80',
     title: 'Chief Financial Officer & Bursar',
@@ -37,7 +252,7 @@ export const PRESET_USERS: AuthUser[] = [
   {
     id: 'usr-staff',
     name: 'Dr. Alistair Finch',
-    email: 'faculty@oakridge.edu',
+    email: 'faculty@edusphere.edu',
     role: 'staff',
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80',
     title: 'HOD Science & Senior Physics Faculty',
@@ -46,7 +261,7 @@ export const PRESET_USERS: AuthUser[] = [
   {
     id: 'usr-student',
     name: 'Aarav Sharma',
-    email: 'student@oakridge.edu',
+    email: 'student@edusphere.edu',
     role: 'student',
     avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80',
     title: 'Grade 10 Scholar & Student Council Rep',
@@ -57,9 +272,9 @@ export const PRESET_USERS: AuthUser[] = [
 export const INITIAL_STUDENTS: Student[] = [
   {
     id: 'std-1',
-    admissionNo: 'OIA-2024-001',
+    admissionNo: 'EDU-2024-001',
     name: 'Aarav Sharma',
-    email: 'aarav.sharma@oakridge.edu',
+    email: 'aarav.sharma@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80',
     grade: 'Grade 10',
     section: 'A',
@@ -120,9 +335,9 @@ export const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: 'std-2',
-    admissionNo: 'OIA-2024-042',
+    admissionNo: 'EDU-2024-042',
     name: 'Sophia Chen',
-    email: 'sophia.chen@oakridge.edu',
+    email: 'sophia.chen@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
     grade: 'Grade 10',
     section: 'A',
@@ -180,9 +395,9 @@ export const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: 'std-3',
-    admissionNo: 'OIA-2024-089',
+    admissionNo: 'EDU-2024-089',
     name: 'Liam Vance',
-    email: 'liam.vance@oakridge.edu',
+    email: 'liam.vance@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
     grade: 'Grade 10',
     section: 'B',
@@ -237,9 +452,9 @@ export const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: 'std-4',
-    admissionNo: 'OIA-2023-112',
+    admissionNo: 'EDU-2023-112',
     name: 'Maya Patel',
-    email: 'maya.patel@oakridge.edu',
+    email: 'maya.patel@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
     grade: 'Grade 11',
     section: 'Sci',
@@ -300,9 +515,9 @@ export const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: 'std-5',
-    admissionNo: 'OIA-2023-156',
+    admissionNo: 'EDU-2023-156',
     name: 'Noah Williams',
-    email: 'noah.w@oakridge.edu',
+    email: 'noah.w@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
     grade: 'Grade 11',
     section: 'Sci',
@@ -357,9 +572,9 @@ export const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: 'std-6',
-    admissionNo: 'OIA-2022-205',
+    admissionNo: 'EDU-2022-205',
     name: 'Chloe Dubois',
-    email: 'chloe.dubois@oakridge.edu',
+    email: 'chloe.dubois@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
     grade: 'Grade 12',
     section: 'A',
@@ -425,7 +640,7 @@ export const INITIAL_STAFF: StaffMember[] = [
     id: 'stf-1',
     staffId: 'FAC-101',
     name: 'Dr. Alistair Finch',
-    email: 'a.finch@oakridge.edu',
+    email: 'a.finch@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80',
     role: 'HOD',
     department: 'Science & Physics',
@@ -441,7 +656,7 @@ export const INITIAL_STAFF: StaffMember[] = [
     id: 'stf-2',
     staffId: 'FAC-102',
     name: 'Prof. Margaret Sterling',
-    email: 'm.sterling@oakridge.edu',
+    email: 'm.sterling@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80',
     role: 'Teacher',
     department: 'Mathematics',
@@ -457,7 +672,7 @@ export const INITIAL_STAFF: StaffMember[] = [
     id: 'stf-3',
     staffId: 'FAC-103',
     name: 'Julian Henderson',
-    email: 'j.henderson@oakridge.edu',
+    email: 'j.henderson@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=80',
     role: 'Teacher',
     department: 'Computer Science',
@@ -473,7 +688,7 @@ export const INITIAL_STAFF: StaffMember[] = [
     id: 'stf-4',
     staffId: 'ACC-201',
     name: 'Claire Vance, CPA',
-    email: 'c.vance@oakridge.edu',
+    email: 'c.vance@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80',
     role: 'Accountant',
     department: 'Finance & Accounts',
@@ -489,7 +704,7 @@ export const INITIAL_STAFF: StaffMember[] = [
     id: 'stf-5',
     staffId: 'ADM-301',
     name: 'Robert Thornton',
-    email: 'r.thornton@oakridge.edu',
+    email: 'r.thornton@edusphere.edu',
     avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80',
     role: 'Admin',
     department: 'School Administration',
@@ -692,7 +907,7 @@ export const INITIAL_CERTIFICATES: Certificate[] = [
     academicYear: '2026-2027',
     signatory: 'Dr. Eleanor Vance, Principal',
     remarks: 'Outstanding Academic Performance & Top Rank in Mathematics Olympiad',
-    verificationCode: 'OIA-VRF-9923-X'
+    verificationCode: 'EDU-VRF-9923-X'
   },
   {
     id: 'cert-2',
@@ -704,7 +919,7 @@ export const INITIAL_CERTIFICATES: Certificate[] = [
     academicYear: '2026-2027',
     signatory: 'Robert Thornton, Registrar',
     remarks: 'Bonafide student of Grade 10 Section A for Passport & Visa verification',
-    verificationCode: 'OIA-VRF-8812-B'
+    verificationCode: 'EDU-VRF-8812-B'
   },
   {
     id: 'cert-3',
@@ -716,11 +931,10 @@ export const INITIAL_CERTIFICATES: Certificate[] = [
     academicYear: '2026-2027',
     signatory: 'Coach Marcus Bell, Athletics Director',
     remarks: 'Gold Medalist - State Interscholastic Swimming Championship 200m Medley',
-    verificationCode: 'OIA-VRF-7734-S'
+    verificationCode: 'EDU-VRF-7734-S'
   }
 ];
 
-// Rich Educational Video Lectures with reliable media
 export const INITIAL_LECTURES: LectureStream[] = [
   {
     id: 'lec-1',
@@ -874,7 +1088,6 @@ export const INITIAL_NOTICES: Notice[] = [
   }
 ];
 
-// Top ERP Features: Library Books
 export const INITIAL_LIBRARY_BOOKS: LibraryBook[] = [
   {
     id: 'bk-1',
@@ -918,7 +1131,6 @@ export const INITIAL_LIBRARY_BOOKS: LibraryBook[] = [
   }
 ];
 
-// Top ERP Features: Transport Routes
 export const INITIAL_TRANSPORT_ROUTES: TransportRoute[] = [
   {
     id: 'tr-1',
@@ -928,7 +1140,7 @@ export const INITIAL_TRANSPORT_ROUTES: TransportRoute[] = [
     driverPhone: '+1 (555) 701-3322',
     capacity: 45,
     currentStudents: 38,
-    stops: ['Westside Plaza (07:15 AM)', 'Maplewood Ave (07:28 AM)', 'Riverdale Gate (07:42 AM)', 'Oakridge Campus (08:00 AM)'],
+    stops: ['Westside Plaza (07:15 AM)', 'Maplewood Ave (07:28 AM)', 'Riverdale Gate (07:42 AM)', 'Campus Terminal (08:00 AM)'],
     morningPickupTime: '07:15 AM',
     afternoonDropTime: '03:45 PM',
     status: 'At Campus'
@@ -941,7 +1153,7 @@ export const INITIAL_TRANSPORT_ROUTES: TransportRoute[] = [
     driverPhone: '+1 (555) 702-4433',
     capacity: 40,
     currentStudents: 35,
-    stops: ['Eastview Station (07:20 AM)', 'Pinecrest Lane (07:35 AM)', 'Highland Park (07:45 AM)', 'Oakridge Campus (08:00 AM)'],
+    stops: ['Eastview Station (07:20 AM)', 'Pinecrest Lane (07:35 AM)', 'Highland Park (07:45 AM)', 'Campus Terminal (08:00 AM)'],
     morningPickupTime: '07:20 AM',
     afternoonDropTime: '03:50 PM',
     status: 'At Campus'
@@ -954,14 +1166,13 @@ export const INITIAL_TRANSPORT_ROUTES: TransportRoute[] = [
     driverPhone: '+1 (555) 703-5544',
     capacity: 50,
     currentStudents: 44,
-    stops: ['North Hills Metro (07:10 AM)', 'Horizon Way (07:25 AM)', 'Cedar Ridge (07:40 AM)', 'Oakridge Campus (08:00 AM)'],
+    stops: ['North Hills Metro (07:10 AM)', 'Horizon Way (07:25 AM)', 'Cedar Ridge (07:40 AM)', 'Campus Terminal (08:00 AM)'],
     morningPickupTime: '07:10 AM',
     afternoonDropTime: '03:40 PM',
     status: 'At Campus'
   }
 ];
 
-// Top ERP Features: Leave Applications
 export const INITIAL_LEAVES: LeaveApplication[] = [
   {
     id: 'lv-1',
@@ -1004,7 +1215,6 @@ export const INITIAL_LEAVES: LeaveApplication[] = [
   }
 ];
 
-// Daily Period Timetable
 export const GRADE_10_TIMETABLE: Record<string, TimetablePeriod[]> = {
   Monday: [
     { periodNo: 1, timeSlot: '08:30 - 09:20', subject: 'Mathematics (Calculus)', teacher: 'Prof. M. Sterling', room: 'Room 204' },

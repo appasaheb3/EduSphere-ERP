@@ -12,9 +12,16 @@ import {
   BookOpen,
   Bell,
   Bus,
-  UserPlus
+  UserPlus,
+  Building2,
+  Palette,
+  School,
+  Cpu,
+  Layers,
+  ShieldCheck,
+  Plus
 } from 'lucide-react';
-import { UserRole } from '../types/erp';
+import { UserRole, Organization, CampusTheme } from '../types/erp';
 import { Language, translations } from '../i18n/translations';
 
 export type NavTab =
@@ -41,6 +48,9 @@ interface SidebarProps {
   overdueInvoicesCount: number;
   currentLang: Language;
   onOpenRegisterStudent?: () => void;
+  currentOrganization: Organization;
+  currentTheme: CampusTheme;
+  onOpenAddOrganization?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -52,9 +62,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
   urgentNoticesCount,
   overdueInvoicesCount,
   currentLang,
-  onOpenRegisterStudent
+  onOpenRegisterStudent,
+  currentOrganization,
+  currentTheme,
+  onOpenAddOrganization
 }) => {
   const t = translations[currentLang];
+
+  const crestIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    School,
+    Cpu,
+    GraduationCap,
+    Layers,
+    DollarSign,
+    Award,
+    BookOpen,
+    ShieldCheck,
+    Building2
+  };
+
+  const CrestIcon = crestIconMap[currentOrganization.crestIcon] || School;
 
   const navItems: {
     id: NavTab;
@@ -151,11 +178,52 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 min-h-[calc(100vh-4rem)]">
       <div className="p-3">
+        {/* Active College Theme Banner Card */}
+        <div
+          className={`mb-3 p-3 rounded-xl border ${currentTheme.borderClass} bg-gradient-to-br ${currentTheme.headerBg} relative overflow-hidden transition-all duration-300`}
+        >
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-9 h-9 rounded-lg bg-gradient-to-tr ${currentTheme.gradientFrom} ${currentTheme.gradientTo} flex items-center justify-center text-white shadow shrink-0`}
+            >
+              <CrestIcon className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-white">
+                  {currentOrganization.code}
+                </span>
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: currentTheme.primaryHex }}
+                  title={currentTheme.name}
+                />
+              </div>
+              <h4 className="text-xs font-bold text-white truncate leading-tight">
+                {currentOrganization.name}
+              </h4>
+              <p className={`text-[10px] truncate ${currentTheme.accentClass}`}>
+                {currentTheme.name}
+              </p>
+            </div>
+          </div>
+
+          {currentRole === 'admin' && onOpenAddOrganization && (
+            <button
+              onClick={onOpenAddOrganization}
+              className="mt-2 w-full py-1 px-2 rounded-lg bg-slate-950/60 hover:bg-slate-950/90 border border-slate-800 text-[10px] font-semibold text-slate-300 hover:text-white flex items-center justify-center gap-1 transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+              <span>{t.addOrganization}</span>
+            </button>
+          )}
+        </div>
+
         {/* Quick Student Registration Button for Admin and Accountant */}
         {(currentRole === 'admin' || currentRole === 'accountant') && onOpenRegisterStudent && (
           <button
             onClick={onOpenRegisterStudent}
-            className="w-full mb-3 py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 transition-all"
+            className={`w-full mb-3 py-2 px-3 rounded-xl text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md transition-all ${currentTheme.btnPrimaryClass}`}
           >
             <UserPlus className="w-4 h-4" />
             <span>{t.registerStudent}</span>
@@ -165,6 +233,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 px-3 py-2">
           {currentRole.toUpperCase()} &bull; {currentLang.toUpperCase()}
         </div>
+
+        {/* Navigation list */}
         <nav className="space-y-1">
           {visibleItems.map((item) => {
             const Icon = item.icon;
@@ -175,9 +245,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                    ? 'text-white shadow-sm'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
                 }`}
+                style={
+                  isActive
+                    ? {
+                        backgroundColor: currentTheme.primaryHex,
+                        boxShadow: `0 4px 14px 0 ${currentTheme.primaryHex}40`
+                      }
+                    : {}
+                }
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
@@ -209,10 +287,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </div>
           <div className="text-xs font-mono text-slate-300 truncate">
-            {t.campusCloud}
+            {currentOrganization.code} &bull; {t.appName}
           </div>
-          <div className="text-[10px] text-slate-500 mt-1">
-            REA Reverse-Engineered Architecture
+          <div className="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+            <span>Theme: {currentTheme.name}</span>
+            <span
+              className="w-2 h-2 rounded-full inline-block"
+              style={{ backgroundColor: currentTheme.primaryHex }}
+            />
           </div>
         </div>
       </div>

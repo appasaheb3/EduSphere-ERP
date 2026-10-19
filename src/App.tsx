@@ -12,7 +12,10 @@ import {
   Notice,
   LibraryBook,
   TransportRoute,
-  LeaveApplication
+  LeaveApplication,
+  Organization,
+  CampusTheme,
+  ThemeColorId
 } from './types/erp';
 import {
   PRESET_USERS,
@@ -27,7 +30,9 @@ import {
   INITIAL_NOTICES,
   INITIAL_LIBRARY_BOOKS,
   INITIAL_TRANSPORT_ROUTES,
-  INITIAL_LEAVES
+  INITIAL_LEAVES,
+  INITIAL_ORGANIZATIONS,
+  CAMPUS_THEMES
 } from './data/mockData';
 import { Language } from './i18n/translations';
 import { LoginPage } from './components/LoginPage';
@@ -46,6 +51,7 @@ import { StudentDirectoryView } from './components/views/StudentDirectoryView';
 import { StaffView } from './components/views/StaffView';
 import { CampusServicesView } from './components/views/CampusServicesView';
 import { RegisterStudentModal } from './components/modals/RegisterStudentModal';
+import { AddOrganizationModal } from './components/modals/AddOrganizationModal';
 import { ReaSpecModal } from './components/views/ReaSpecModal';
 
 export default function App() {
@@ -55,9 +61,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [currentLang, setCurrentLang] = useState<Language>('en');
 
+  // Organizations and Dynamic Theme State
+  const [organizations, setOrganizations] = useState<Organization[]>(INITIAL_ORGANIZATIONS);
+  const [currentOrgId, setCurrentOrgId] = useState<string>(INITIAL_ORGANIZATIONS[0].id);
+
   // Modals
   const [isReaSpecOpen, setIsReaSpecOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isAddOrgModalOpen, setIsAddOrgModalOpen] = useState(false);
 
   // App-wide persistent state
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
@@ -72,6 +83,28 @@ export default function App() {
   const [books, setBooks] = useState<LibraryBook[]>(INITIAL_LIBRARY_BOOKS);
   const [transportRoutes, setTransportRoutes] = useState<TransportRoute[]>(INITIAL_TRANSPORT_ROUTES);
   const [leaves, setLeaves] = useState<LeaveApplication[]>(INITIAL_LEAVES);
+
+  // Active Organization & Active Campus Theme
+  const currentOrganization =
+    organizations.find((o) => o.id === currentOrgId) || organizations[0];
+  const currentTheme: CampusTheme =
+    CAMPUS_THEMES[currentOrganization.themeId] || CAMPUS_THEMES.indigo;
+
+  // Organization & Theme Handlers
+  const handleAddOrganization = (newOrg: Organization) => {
+    setOrganizations((prev) => [newOrg, ...prev]);
+    setCurrentOrgId(newOrg.id); // Immediately switches to the new college and activates its custom theme!
+  };
+
+  const handleSelectOrganization = (org: Organization) => {
+    setCurrentOrgId(org.id);
+  };
+
+  const handleChangeTheme = (themeId: ThemeColorId) => {
+    setOrganizations((prev) =>
+      prev.map((o) => (o.id === currentOrgId ? { ...o, themeId } : o))
+    );
+  };
 
   // Auth Handlers
   const handleLogin = (user: AuthUser) => {
@@ -183,13 +216,17 @@ export default function App() {
     );
   };
 
-  // If logged out, render the login page with language support
+  // If logged out, render the login page with college selection and theme
   if (!currentUser) {
     return (
       <LoginPage
         onLogin={handleLogin}
         currentLang={currentLang}
         onLanguageChange={setCurrentLang}
+        organizations={organizations}
+        currentOrganization={currentOrganization}
+        onSelectOrganization={handleSelectOrganization}
+        currentTheme={currentTheme}
       />
     );
   }
@@ -201,8 +238,15 @@ export default function App() {
   const overdueInvoicesCount = students.filter((s) => s.feeStatus === 'Overdue').length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
-      {/* Top Global Navigation Bar */}
+    <div
+      className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200"
+      style={
+        {
+          '--theme-primary': currentTheme.primaryHex
+        } as React.CSSProperties
+      }
+    >
+      {/* Top Global Navigation Bar with Organization & Theme Switcher */}
       <Navbar
         currentUser={currentUser}
         onLogout={handleLogout}
@@ -213,6 +257,12 @@ export default function App() {
         onOpenReaSpec={() => setIsReaSpecOpen(true)}
         currentLang={currentLang}
         onLanguageChange={setCurrentLang}
+        currentOrganization={currentOrganization}
+        organizations={organizations}
+        onSelectOrganization={handleSelectOrganization}
+        onOpenAddOrganization={() => setIsAddOrgModalOpen(true)}
+        currentTheme={currentTheme}
+        onChangeTheme={handleChangeTheme}
       />
 
       {/* Main Workspace: Sidebar + Dynamic Module View */}
@@ -227,6 +277,9 @@ export default function App() {
           overdueInvoicesCount={overdueInvoicesCount}
           currentLang={currentLang}
           onOpenRegisterStudent={() => setIsRegisterModalOpen(true)}
+          currentOrganization={currentOrganization}
+          currentTheme={currentTheme}
+          onOpenAddOrganization={() => setIsAddOrgModalOpen(true)}
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
@@ -243,6 +296,8 @@ export default function App() {
               homework={homework}
               onNavigate={(tab) => setActiveTab(tab)}
               onOpenRegisterStudent={() => setIsRegisterModalOpen(true)}
+              currentOrganization={currentOrganization}
+              currentTheme={currentTheme}
             />
           )}
 
@@ -353,6 +408,14 @@ export default function App() {
           )}
         </main>
       </div>
+
+      {/* Add College / Organization with Theme Selection Modal */}
+      <AddOrganizationModal
+        isOpen={isAddOrgModalOpen}
+        onClose={() => setIsAddOrgModalOpen(false)}
+        onAddOrganization={handleAddOrganization}
+        currentLang={currentLang}
+      />
 
       {/* Register Student Modal for Admin and Accountant */}
       <RegisterStudentModal

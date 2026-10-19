@@ -28,8 +28,11 @@ import {
   LectureStream,
   Notice,
   HomeworkAssignment,
-  AuthUser
+  AuthUser,
+  Organization,
+  CampusTheme
 } from '../../types/erp';
+import { CAMPUS_THEMES } from '../../data/mockData';
 import { NavTab } from '../Sidebar';
 
 interface DashboardViewProps {
@@ -44,6 +47,8 @@ interface DashboardViewProps {
   homework: HomeworkAssignment[];
   onNavigate: (tab: NavTab) => void;
   onOpenRegisterStudent?: () => void;
+  currentOrganization?: Organization;
+  currentTheme?: CampusTheme;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -57,7 +62,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   notices,
   homework,
   onNavigate,
-  onOpenRegisterStudent
+  onOpenRegisterStudent,
+  currentOrganization,
+  currentTheme = CAMPUS_THEMES.indigo
 }) => {
   const totalStudents = students.length;
   const totalStaff = staff.length;
@@ -79,19 +86,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. ROLE-CUSTOMIZED WELCOME BANNER */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+      {/* 1. ROLE-CUSTOMIZED WELCOME BANNER WITH CAMPUS THEME */}
+      <div className={`bg-gradient-to-r ${currentTheme.headerBg} border ${currentTheme.borderClass} rounded-2xl p-6 relative overflow-hidden transition-all duration-300`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-semibold mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
-              {currentRole === 'admin'
-                ? 'Super Administrator Executive Console'
-                : currentRole === 'accountant'
-                ? 'Bursar & Financial Accounting Command'
-                : currentRole === 'staff'
-                ? 'Faculty Academic & Teaching Workstation'
-                : 'Student & Parent Academic Cockpit'}
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full ${currentTheme.badgeBg} ${currentTheme.badgeText} border ${currentTheme.borderClass} text-xs font-semibold`}>
+                <Sparkles className="w-3.5 h-3.5" />
+                {currentRole === 'admin'
+                  ? 'Super Administrator Executive Console'
+                  : currentRole === 'accountant'
+                  ? 'Bursar & Financial Accounting Command'
+                  : currentRole === 'staff'
+                  ? 'Faculty Academic & Teaching Workstation'
+                  : 'Student & Parent Academic Cockpit'}
+              </div>
+
+              {currentOrganization && (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-950/80 border border-slate-700 text-xs font-semibold text-slate-200">
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: currentTheme.primaryHex }}
+                  />
+                  <span>{currentOrganization.name}</span>
+                  <span className={`font-mono text-[10px] ${currentTheme.accentClass}`}>
+                    ({currentOrganization.code})
+                  </span>
+                </div>
+              )}
             </div>
 
             <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
@@ -102,13 +124,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
               {currentRole === 'admin' &&
-                'Comprehensive operational overview of student cohorts, faculty scheduling, financial health, and institutional circulars.'}
+                `Active Campus: ${currentOrganization?.name || 'EduSphere Campus'} (${currentOrganization?.type || 'Institute'}) • Comprehensive overview of student cohorts, faculty scheduling, and finances.`}
               {currentRole === 'accountant' &&
-                'Manage term tuition fee installments, monitor collection realization, issue receipts, and register new fee payers.'}
+                `Tuition Fee Management for ${currentOrganization?.name || 'EduSphere Campus'} • Monitor collection realization, schedule installments, and issue receipts.`}
               {currentRole === 'staff' &&
                 'Your teaching dashboard for taking daily roll-call, managing online video lectures, creating homework assignments, and scheduling exam halls.'}
               {currentRole === 'student' &&
-                `Academic Grade: ${activeStudent?.grade} (Sec ${activeStudent?.section}) &bull; Overall GPA: ${activeStudent?.overallGpa}/4.0 &bull; Attendance: ${activeStudent?.attendancePct}%`}
+                `Enrolled in ${currentOrganization?.name || 'EduSphere Academy'} • Grade: ${activeStudent?.grade} (Sec ${activeStudent?.section}) • Overall GPA: ${activeStudent?.overallGpa}/4.0 • Attendance: ${activeStudent?.attendancePct}%`}
             </p>
           </div>
 
@@ -116,7 +138,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {(currentRole === 'admin' || currentRole === 'accountant') && onOpenRegisterStudent && (
               <button
                 onClick={onOpenRegisterStudent}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all"
+                className={`px-3.5 py-2 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5 shadow-lg transition-all ${currentTheme.btnPrimaryClass}`}
               >
                 <UserPlus className="w-4 h-4" />
                 Register Student
