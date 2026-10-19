@@ -15,6 +15,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import { UserRole } from '../types/erp';
+import { Language, translations } from '../i18n/translations';
 
 export type NavTab =
   | 'dashboard'
@@ -38,6 +39,7 @@ interface SidebarProps {
   pendingHomeworkCount: number;
   urgentNoticesCount: number;
   overdueInvoicesCount: number;
+  currentLang: Language;
   onOpenRegisterStudent?: () => void;
 }
 
@@ -49,8 +51,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   pendingHomeworkCount,
   urgentNoticesCount,
   overdueInvoicesCount,
+  currentLang,
   onOpenRegisterStudent
 }) => {
+  const t = translations[currentLang];
+
   const navItems: {
     id: NavTab;
     label: string;
@@ -61,31 +66,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }[] = [
     {
       id: 'dashboard',
-      label: currentRole === 'student' ? 'Student Cockpit' : currentRole === 'accountant' ? 'Bursar Dashboard' : 'Campus Overview',
+      label: currentRole === 'student' ? (currentLang === 'mr' ? 'माझा डॅशबोर्ड' : currentLang === 'hi' ? 'मेरा डैशबोर्ड' : 'Student Cockpit') : t.navDashboard,
       icon: LayoutDashboard,
       roles: ['admin', 'staff', 'accountant', 'student']
     },
     {
       id: 'students',
-      label: currentRole === 'student' ? 'My Student Dossier' : 'Students & Records',
+      label: currentRole === 'student' ? (currentLang === 'mr' ? 'माझी शैक्षणिक माहिती' : currentLang === 'hi' ? 'मेरी शैक्षणिक प्रोफाइल' : 'My Student Dossier') : t.navStudents,
       icon: Users,
       roles: ['admin', 'staff', 'accountant', 'student']
     },
     {
       id: 'staff',
-      label: 'Staff & Faculty',
+      label: t.navStaff,
       icon: GraduationCap,
       roles: ['admin', 'staff']
     },
     {
       id: 'attendance',
-      label: 'Daily Attendance',
+      label: currentRole === 'student' ? (currentLang === 'mr' ? 'माझी हजेरी' : currentLang === 'hi' ? 'मेरी उपस्थिति' : 'My Attendance') : t.navAttendance,
       icon: CalendarCheck,
       roles: ['admin', 'staff', 'student']
     },
     {
       id: 'accounting',
-      label: currentRole === 'student' ? 'My Fee Installments' : 'Accountant & Installments',
+      label: currentRole === 'student' ? (currentLang === 'mr' ? 'माझे शुल्क व हप्ते' : currentLang === 'hi' ? 'मेरा शुल्क और किस्तें' : 'My Fee Installments') : t.navAccounting,
       icon: DollarSign,
       roles: ['admin', 'accountant', 'student'],
       badge: overdueInvoicesCount > 0 ? overdueInvoicesCount : undefined,
@@ -93,25 +98,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'exams',
-      label: 'Exams & Results',
+      label: currentRole === 'student' ? (currentLang === 'mr' ? 'माझ्या परीक्षा व गुण' : currentLang === 'hi' ? 'मेरी परीक्षा और अंक' : 'My Exams & Grades') : t.navExams,
       icon: FileCheck2,
       roles: ['admin', 'staff', 'student']
     },
     {
       id: 'schedule-exam',
-      label: 'Schedule Exam',
+      label: t.navScheduleExam,
       icon: Calendar,
       roles: ['admin', 'staff']
     },
     {
       id: 'certification',
-      label: 'Certificates & TC',
+      label: currentRole === 'student' ? (currentLang === 'mr' ? 'माझी प्रमाणपत्रे' : currentLang === 'hi' ? 'मेरे प्रमाणपत्र' : 'My Certificates') : t.navCertificates,
       icon: Award,
       roles: ['admin', 'staff', 'student']
     },
     {
       id: 'live-lecture',
-      label: 'Online Streaming Video',
+      label: t.navLiveLecture,
       icon: Video,
       roles: ['admin', 'staff', 'student'],
       badge: liveLecturesCount > 0 ? 'LIVE' : undefined,
@@ -119,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'homework',
-      label: 'Homework & Tasks',
+      label: currentRole === 'student' ? (currentLang === 'mr' ? 'माझा गृहपाठ' : currentLang === 'hi' ? 'मेरा गृहकार्य' : 'My Homework') : t.navHomework,
       icon: BookOpen,
       roles: ['admin', 'staff', 'student'],
       badge: pendingHomeworkCount > 0 ? pendingHomeworkCount : undefined,
@@ -127,13 +132,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'campus-services',
-      label: 'Transport, Library & Leaves',
+      label: t.navLogistics,
       icon: Bus,
       roles: ['admin', 'staff', 'accountant', 'student']
     },
     {
       id: 'notice-board',
-      label: 'Notice Board',
+      label: t.navNoticeBoard,
       icon: Bell,
       roles: ['admin', 'staff', 'accountant', 'student'],
       badge: urgentNoticesCount > 0 ? urgentNoticesCount : undefined,
@@ -153,12 +158,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full mb-3 py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 transition-all"
           >
             <UserPlus className="w-4 h-4" />
-            <span>Register New Student</span>
+            <span>{t.registerStudent}</span>
           </button>
         )}
 
         <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 px-3 py-2">
-          {currentRole.toUpperCase()} Navigation
+          {currentRole.toUpperCase()} &bull; {currentLang.toUpperCase()}
         </div>
         <nav className="space-y-1">
           {visibleItems.map((item) => {
@@ -197,14 +202,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="mt-auto p-3 border-t border-slate-800">
         <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
           <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-            <span>Security Layer</span>
+            <span>{t.liveCampus}</span>
             <span className="text-emerald-400 font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              Isolated Role RBAC
+              RBAC Active
             </span>
           </div>
           <div className="text-xs font-mono text-slate-300 truncate">
-            Oakridge Campus Cloud
+            {t.campusCloud}
           </div>
           <div className="text-[10px] text-slate-500 mt-1">
             REA Reverse-Engineered Architecture

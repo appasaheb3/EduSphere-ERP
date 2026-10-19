@@ -11,10 +11,11 @@ import {
   X,
   FileSpreadsheet
 } from 'lucide-react';
-import { Exam, ExamScheduleItem, Student, UserRole } from '../../types/erp';
+import { Exam, ExamScheduleItem, Student, UserRole, AuthUser } from '../../types/erp';
 
 interface ExamViewProps {
   currentRole: UserRole;
+  currentUser: AuthUser | null;
   exams: Exam[];
   scheduleItems: ExamScheduleItem[];
   students: Student[];
@@ -24,19 +25,22 @@ interface StudentGradeRecord {
   studentId: string;
   studentName: string;
   rollNo: number;
-  marks: Record<string, number>; // subject -> marks
+  marks: Record<string, number>;
 }
 
 export const ExamView: React.FC<ExamViewProps> = ({
   currentRole,
+  currentUser,
   exams,
   scheduleItems,
   students
 }) => {
+  const isStudent = currentRole === 'student';
+  const myStudentId = currentUser?.studentId || 'std-1';
+
   const [selectedExamId, setSelectedExamId] = useState<string>(exams[0]?.id || '');
   const [reportCardStudent, setReportCardStudent] = useState<Student | null>(null);
 
-  // Initial grade records state
   const [gradeRecords, setGradeRecords] = useState<Record<string, StudentGradeRecord>>({
     'std-1': {
       studentId: 'std-1',
@@ -107,6 +111,11 @@ export const ExamView: React.FC<ExamViewProps> = ({
     return { grade: 'F', color: 'text-rose-500' };
   };
 
+  // RBAC Data Isolation: If logged in as student, only show themselves!
+  const visibleStudentsForExams = isStudent
+    ? students.filter((s) => s.id === myStudentId)
+    : students.filter((s) => s.grade === selectedExam?.grade || !selectedExam);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -114,10 +123,12 @@ export const ExamView: React.FC<ExamViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <FileCheck2 className="w-5 h-5 text-indigo-400" />
-            Examinations & Marks Registry
+            {isStudent ? 'My Examination Evaluations & Report Card' : 'Examinations & Marks Registry'}
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Record subject evaluations, compute GPAs, and print certified academic report cards.
+            {isStudent
+              ? 'View your private exam scores, subject GPAs, and official verified report card.'
+              : 'Record subject evaluations, compute GPAs, and print certified academic report cards.'}
           </p>
         </div>
 
@@ -170,10 +181,12 @@ export const ExamView: React.FC<ExamViewProps> = ({
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-            <h3 className="text-sm font-bold text-white">Student Marks Ledger</h3>
+            <h3 className="text-sm font-bold text-white">
+              {isStudent ? 'Your Official Subject Grades' : 'Student Marks Ledger'}
+            </h3>
           </div>
           <span className="text-xs text-slate-400">
-            {currentRole === 'student' ? 'Read-only view' : 'Click in marks cell to edit inline'}
+            {isStudent ? 'Private Student Confidential Grade Data' : 'Click in marks cell to edit inline'}
           </span>
         </div>
 
@@ -195,75 +208,73 @@ export const ExamView: React.FC<ExamViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {students
-                .filter((s) => s.grade === selectedExam?.grade || !selectedExam)
-                .map((student) => {
-                  const record = gradeRecords[student.id];
-                  const studentMarks = record?.marks || {};
+              {visibleStudentsForExams.map((student) => {
+                const record = gradeRecords[student.id];
+                const studentMarks = record?.marks || {};
 
-                  let totalScore = 0;
-                  let scoredCount = 0;
+                let totalScore = 0;
+                let scoredCount = 0;
 
-                  examSubjects.forEach((sub) => {
-                    if (studentMarks[sub.subject] !== undefined) {
-                      totalScore += studentMarks[sub.subject];
-                      scoredCount += 1;
-                    }
-                  });
+                examSubjects.forEach((sub) => {
+                  if (studentMarks[sub.subject] !== undefined) {
+                    totalScore += studentMarks[sub.subject];
+                    scoredCount += 1;
+                  }
+                });
 
-                  const avgScore = scoredCount > 0 ? Math.round(totalScore / scoredCount) : 0;
-                  const gradeInfo = getLetterGrade(avgScore);
+                const avgScore = scoredCount > 0 ? Math.round(totalScore / scoredCount) : 0;
+                const gradeInfo = getLetterGrade(avgScore);
 
-                  return (
-                    <tr key={student.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3 px-4 font-mono font-medium text-slate-300">#{student.rollNo}</td>
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-white">{student.name}</div>
-                        <div className="text-[11px] text-slate-400">{student.admissionNo}</div>
-                      </td>
+                return (
+                  <tr key={student.id} className="hover:bg-slate-800/30 transition-colors">
+                    <td className="py-3 px-4 font-mono font-medium text-slate-300">#{student.rollNo}</td>
+                    <td className="py-3 px-4">
+                      <div className="font-semibold text-white">{student.name}</div>
+                      <div className="text-[11px] text-slate-400">{student.admissionNo}</div>
+                    </td>
 
-                      {examSubjects.map((sub) => {
-                        const currentMark = studentMarks[sub.subject] ?? 0;
-                        return (
-                          <td key={sub.id} className="py-3 px-4 text-center">
-                            {currentRole === 'student' ? (
-                              <span className="font-mono text-slate-200 font-semibold">{currentMark}</span>
-                            ) : (
-                              <input
-                                type="number"
-                                min={0}
-                                max={100}
-                                value={currentMark}
-                                onChange={(e) =>
-                                  handleUpdateMark(student.id, sub.subject, Number(e.target.value))
-                                }
-                                className="w-16 bg-slate-950 border border-slate-800 text-center font-mono py-1 rounded text-white focus:outline-none focus:border-indigo-500 focus:bg-slate-900"
-                              />
-                            )}
-                          </td>
-                        );
-                      })}
+                    {examSubjects.map((sub) => {
+                      const currentMark = studentMarks[sub.subject] ?? 0;
+                      return (
+                        <td key={sub.id} className="py-3 px-4 text-center">
+                          {isStudent ? (
+                            <span className="font-mono text-slate-200 font-semibold">{currentMark}</span>
+                          ) : (
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={currentMark}
+                              onChange={(e) =>
+                                handleUpdateMark(student.id, sub.subject, Number(e.target.value))
+                              }
+                              className="w-16 bg-slate-950 border border-slate-800 text-center font-mono py-1 rounded text-white focus:outline-none focus:border-indigo-500 focus:bg-slate-900"
+                            />
+                          )}
+                        </td>
+                      );
+                    })}
 
-                      <td className="py-3 px-4 text-center font-mono font-bold text-slate-200">
-                        {avgScore}%
-                      </td>
-                      <td className="py-3 px-4 text-center font-mono font-bold">
-                        <span className={`px-2 py-0.5 rounded bg-slate-950 border border-slate-800 ${gradeInfo.color}`}>
-                          {gradeInfo.grade}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => setReportCardStudent(student)}
-                          className="px-2.5 py-1 rounded bg-indigo-600/80 hover:bg-indigo-600 text-white font-medium text-[11px] inline-flex items-center gap-1 transition-colors"
-                        >
-                          <Award className="w-3 h-3" />
-                          View Card
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                    <td className="py-3 px-4 text-center font-mono font-bold text-slate-200">
+                      {avgScore}%
+                    </td>
+                    <td className="py-3 px-4 text-center font-mono font-bold">
+                      <span className={`px-2 py-0.5 rounded bg-slate-950 border border-slate-800 ${gradeInfo.color}`}>
+                        {gradeInfo.grade}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => setReportCardStudent(student)}
+                        className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-[11px] inline-flex items-center gap-1 transition-colors"
+                      >
+                        <Award className="w-3 h-3" />
+                        {isStudent ? 'My Report Card' : 'View Card'}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

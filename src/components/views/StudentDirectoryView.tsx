@@ -14,35 +14,51 @@ import {
   Clock,
   IdCard,
   UserPlus,
+  ShieldAlert,
   X,
   Layers
 } from 'lucide-react';
-import { Student, UserRole } from '../../types/erp';
+import { Student, UserRole, AuthUser } from '../../types/erp';
 
 interface StudentDirectoryViewProps {
   currentRole: UserRole;
+  currentUser: AuthUser | null;
   students: Student[];
   onOpenRegisterModal?: () => void;
 }
 
 export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
   currentRole,
+  currentUser,
   students,
   onOpenRegisterModal
 }) => {
+  const isStudentRole = currentRole === 'student';
+
+  // If student role is active, strictly isolate to their own record only
+  const activeStudentId = currentUser?.studentId || 'std-1';
+  const myStudentProfile = students.find((s) => s.id === activeStudentId) || students[0];
+
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState('All');
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(students[0] || null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(
+    isStudentRole ? myStudentProfile : students[0] || null
+  );
   const [showIdBadge, setShowIdBadge] = useState(false);
 
-  const filteredStudents = students.filter((s) => {
-    const matchesQuery =
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.admissionNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.parentName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesGrade = gradeFilter === 'All' || s.grade === gradeFilter;
-    return matchesQuery && matchesGrade;
-  });
+  // If student, list contains ONLY themselves. If admin/staff/accountant, full cohort.
+  const visibleStudents = isStudentRole
+    ? [myStudentProfile]
+    : students.filter((s) => {
+        const matchesQuery =
+          s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          s.admissionNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          s.parentName.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesGrade = gradeFilter === 'All' || s.grade === gradeFilter;
+        return matchesQuery && matchesGrade;
+      });
+
+  const displayStudent = isStudentRole ? myStudentProfile : (selectedStudent || myStudentProfile);
 
   return (
     <div className="space-y-6">
@@ -51,15 +67,17 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-indigo-400" />
-            {currentRole === 'student' ? 'My Academic Dossier' : 'Student Registry & Cohort Records'}
+            {isStudentRole ? 'My Personal Student Academic Dossier' : 'Student Registry & Cohort Records'}
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Complete scholastic dossiers including GPA metrics, guardian contacts, fee installment balances, and digital ID cards.
+            {isStudentRole
+              ? 'Your private student dossier: GPA records, tuition clearance, emergency guardian contacts, and digital ID card.'
+              : 'Complete scholastic dossiers including GPA metrics, guardian contacts, fee installment balances, and digital ID cards.'}
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {(currentRole === 'admin' || currentRole === 'accountant') && onOpenRegisterModal && (
+          {!isStudentRole && (currentRole === 'admin' || currentRole === 'accountant') && onOpenRegisterModal && (
             <button
               onClick={onOpenRegisterModal}
               className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 shadow-md shadow-indigo-600/20 transition-all"
@@ -69,62 +87,79 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
             </button>
           )}
 
-          {selectedStudent && (
+          {displayStudent && (
             <button
               onClick={() => setShowIdBadge(true)}
               className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2 border border-slate-700 transition-all"
             >
               <IdCard className="w-4 h-4 text-indigo-400" />
-              Generate Student ID Badge
+              {isStudentRole ? 'View My Student ID Card' : 'Generate Student ID Badge'}
             </button>
           )}
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="bg-slate-900/70 border border-slate-800 p-4 rounded-xl flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search student by name, admission #, or guardian..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-          />
+      {/* RBAC Notice Banner for Student */}
+      {isStudentRole && (
+        <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs text-slate-300">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>
+              <strong>Private Student Record Protection (FERPA / GDPR Compliant):</strong> You are viewing your personal authenticated record. Peer student data is strictly restricted.
+            </span>
+          </div>
+          <span className="font-mono text-indigo-400 font-semibold">{myStudentProfile.admissionNo}</span>
         </div>
+      )}
 
-        <div className="flex items-center gap-1.5 self-end sm:self-auto text-xs">
-          <span className="text-slate-400 mr-1 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> Grade:
-          </span>
-          {['All', 'Grade 10', 'Grade 11', 'Grade 12'].map((g) => (
-            <button
-              key={g}
-              onClick={() => setGradeFilter(g)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                gradeFilter === g
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
-              }`}
-            >
-              {g}
-            </button>
-          ))}
+      {/* Search and Filters (Hidden for Student) */}
+      {!isStudentRole && (
+        <div className="bg-slate-900/70 border border-slate-800 p-4 rounded-xl flex flex-col sm:flex-row gap-3 items-center justify-between">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search student by name, admission #, or guardian..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5 self-end sm:self-auto text-xs">
+            <span className="text-slate-400 mr-1 flex items-center gap-1">
+              <Filter className="w-3.5 h-3.5" /> Grade:
+            </span>
+            {['All', 'Grade 10', 'Grade 11', 'Grade 12'].map((g) => (
+              <button
+                key={g}
+                onClick={() => setGradeFilter(g)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  gradeFilter === g
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-800 text-slate-400 hover:text-white'
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Grid: Student List and Selected Dossier */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Student Cards List */}
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {filteredStudents.map((student) => {
-            const isSelected = selectedStudent?.id === student.id;
+        <div className={`grid grid-cols-1 ${isStudentRole ? 'lg:col-span-1' : 'lg:col-span-2 sm:grid-cols-2'} gap-4`}>
+          {visibleStudents.map((student) => {
+            const isSelected = displayStudent?.id === student.id;
             return (
               <div
                 key={student.id}
-                onClick={() => setSelectedStudent(student)}
-                className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                onClick={() => !isStudentRole && setSelectedStudent(student)}
+                className={`p-4 rounded-xl border transition-all ${
+                  isStudentRole ? 'cursor-default' : 'cursor-pointer'
+                } flex flex-col justify-between ${
                   isSelected
                     ? 'bg-slate-900 border-indigo-500 ring-2 ring-indigo-500/30'
                     : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700'
@@ -178,40 +213,40 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
         </div>
 
         {/* Selected Student Detail Dossier */}
-        {selectedStudent && (
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-5">
+        {displayStudent && (
+          <div className={`${isStudentRole ? 'lg:col-span-2' : 'lg:col-span-1'} bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-5`}>
             <div className="text-center pb-4 border-b border-slate-800">
               <img
-                src={selectedStudent.avatar}
-                alt={selectedStudent.name}
+                src={displayStudent.avatar}
+                alt={displayStudent.name}
                 className="w-20 h-20 rounded-2xl object-cover mx-auto border-2 border-indigo-500 shadow-xl"
               />
-              <h3 className="text-base font-bold text-white mt-2.5">{selectedStudent.name}</h3>
+              <h3 className="text-base font-bold text-white mt-2.5">{displayStudent.name}</h3>
               <p className="text-xs text-slate-400">
-                {selectedStudent.grade} - Section {selectedStudent.section} &bull; Roll #{selectedStudent.rollNo}
+                {displayStudent.grade} - Section {displayStudent.section} &bull; Roll #{displayStudent.rollNo}
               </p>
               <div className="mt-2 inline-block px-2.5 py-0.5 rounded-full bg-slate-950 text-indigo-300 font-mono text-[11px] border border-slate-800">
-                {selectedStudent.admissionNo}
+                {displayStudent.admissionNo}
               </div>
             </div>
 
             {/* Academic & Financial Quick Metrics */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
                 <span className="text-slate-500 block text-[10px]">Cumulative GPA</span>
-                <span className="text-sm font-bold text-indigo-400 font-mono">{selectedStudent.overallGpa}</span>
+                <span className="text-sm font-bold text-indigo-400 font-mono">{displayStudent.overallGpa}</span>
               </div>
               <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
                 <span className="text-slate-500 block text-[10px]">Attendance Rate</span>
-                <span className="text-sm font-bold text-emerald-400 font-mono">{selectedStudent.attendancePct}%</span>
+                <span className="text-sm font-bold text-emerald-400 font-mono">{displayStudent.attendancePct}%</span>
               </div>
               <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
                 <span className="text-slate-500 block text-[10px]">Fee Clearance</span>
-                <span className="text-sm font-bold text-white">{selectedStudent.feeStatus}</span>
+                <span className="text-sm font-bold text-white">{displayStudent.feeStatus}</span>
               </div>
               <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
                 <span className="text-slate-500 block text-[10px]">Balance Due</span>
-                <span className="text-sm font-bold text-amber-400 font-mono">${selectedStudent.balanceAmount}</span>
+                <span className="text-sm font-bold text-amber-400 font-mono">${displayStudent.balanceAmount}</span>
               </div>
             </div>
 
@@ -220,19 +255,24 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
               <h4 className="font-semibold text-white text-xs flex items-center justify-between">
                 <span>Tuition Installments</span>
                 <span className="text-slate-500 font-mono text-[10px]">
-                  {selectedStudent.installments.filter((i) => i.status === 'Paid').length} of {selectedStudent.installments.length} Paid
+                  {displayStudent.installments.filter((i) => i.status === 'Paid').length} of {displayStudent.installments.length} Paid
                 </span>
               </h4>
               <div className="space-y-1">
-                {selectedStudent.installments.map((inst) => (
+                {displayStudent.installments.map((inst) => (
                   <div
                     key={inst.id}
-                    className="p-2 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between text-[11px]"
+                    className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between text-[11px]"
                   >
-                    <span className="text-slate-300 font-medium">{inst.title}</span>
+                    <div>
+                      <span className="text-slate-200 font-medium block">{inst.title}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">Due: {inst.dueDate}</span>
+                    </div>
                     <span
-                      className={`font-mono font-bold ${
-                        inst.status === 'Paid' ? 'text-emerald-400' : 'text-amber-400'
+                      className={`font-mono font-bold px-2 py-0.5 rounded text-[10px] ${
+                        inst.status === 'Paid'
+                          ? 'text-emerald-400 bg-emerald-500/10'
+                          : 'text-amber-400 bg-amber-500/10'
                       }`}
                     >
                       ${inst.amount} ({inst.status})
@@ -247,16 +287,16 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
               <h4 className="font-semibold text-white text-xs">Parent & Guardian Information</h4>
               <div className="flex items-center gap-2">
                 <Users className="w-3.5 h-3.5 text-slate-500" />
-                <span>Guardian: <strong>{selectedStudent.parentName}</strong></span>
+                <span>Guardian: <strong>{displayStudent.parentName}</strong></span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-slate-500" />
-                <span className="font-mono">{selectedStudent.parentContact}</span>
+                <span className="font-mono">{displayStudent.parentContact}</span>
               </div>
-              {selectedStudent.busRoute && (
+              {displayStudent.busRoute && (
                 <div className="flex items-center gap-2 text-indigo-300">
                   <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Transport: {selectedStudent.busRoute}</span>
+                  <span>Transport: {displayStudent.busRoute}</span>
                 </div>
               )}
             </div>
@@ -266,14 +306,14 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
               className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-md shadow-indigo-600/20"
             >
               <IdCard className="w-4 h-4" />
-              View Official Campus ID Card
+              {isStudentRole ? 'View My Student ID Card' : 'View Official Campus ID Card'}
             </button>
           </div>
         )}
       </div>
 
       {/* ID Badge Modal */}
-      {showIdBadge && selectedStudent && (
+      {showIdBadge && displayStudent && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-gradient-to-b from-indigo-900 via-slate-900 to-slate-950 text-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative border border-indigo-500/40 text-center">
             <button
@@ -289,22 +329,22 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
             <div className="text-xs font-semibold text-slate-300 mb-4">Official Student Identification</div>
 
             <img
-              src={selectedStudent.avatar}
-              alt={selectedStudent.name}
+              src={displayStudent.avatar}
+              alt={displayStudent.name}
               className="w-24 h-24 rounded-2xl object-cover mx-auto border-4 border-indigo-400 shadow-xl"
             />
 
-            <h3 className="text-lg font-bold text-white mt-3">{selectedStudent.name}</h3>
-            <p className="text-xs text-indigo-300 font-mono mt-0.5">{selectedStudent.admissionNo}</p>
+            <h3 className="text-lg font-bold text-white mt-3">{displayStudent.name}</h3>
+            <p className="text-xs text-indigo-300 font-mono mt-0.5">{displayStudent.admissionNo}</p>
 
             <div className="mt-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-xs grid grid-cols-2 gap-2 text-left">
               <div>
                 <span className="text-[10px] text-slate-500 block">Class / Cohort</span>
-                <span className="font-semibold text-slate-200">{selectedStudent.grade}</span>
+                <span className="font-semibold text-slate-200">{displayStudent.grade}</span>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Roll Number</span>
-                <span className="font-semibold text-slate-200">#{selectedStudent.rollNo}</span>
+                <span className="font-semibold text-slate-200">#{displayStudent.rollNo}</span>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 block">Valid Academic Term</span>
@@ -313,7 +353,7 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
               <div>
                 <span className="text-[10px] text-slate-500 block">Emergency Phone</span>
                 <span className="font-semibold text-slate-200 font-mono text-[10px] truncate">
-                  {selectedStudent.parentContact}
+                  {displayStudent.parentContact}
                 </span>
               </div>
             </div>

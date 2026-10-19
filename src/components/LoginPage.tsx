@@ -12,16 +12,25 @@ import {
   Users,
   DollarSign,
   GraduationCap,
-  BookOpen
+  BookOpen,
+  Globe
 } from 'lucide-react';
 import { AuthUser, UserRole } from '../types/erp';
 import { PRESET_USERS } from '../data/mockData';
+import { Language, translations } from '../i18n/translations';
 
 interface LoginPageProps {
   onLogin: (user: AuthUser) => void;
+  currentLang: Language;
+  onLanguageChange: (lang: Language) => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({
+  onLogin,
+  currentLang,
+  onLanguageChange
+}) => {
+  const t = translations[currentLang];
   const [email, setEmail] = useState('admin@oakridge.edu');
   const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +42,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     if (matched) {
       onLogin(matched);
     } else {
-      // Create guest session based on domain or default to admin
       const guestRole: UserRole = email.includes('student')
         ? 'student'
         : email.includes('account')
@@ -55,12 +63,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 relative overflow-hidden font-sans selection:bg-indigo-500/30">
-      {/* Background radial ambient lights */}
+      {/* Background ambient lights */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
+      {/* Language Selector Top Right */}
+      <div className="absolute top-4 right-4 z-20 flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-xs">
+        <Globe className="w-3.5 h-3.5 text-indigo-400 mx-1.5" />
+        {(['en', 'hi', 'mr'] as const).map((lang) => (
+          <button
+            key={lang}
+            onClick={() => onLanguageChange(lang)}
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+              currentLang === lang
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            {lang === 'en' ? 'English' : lang === 'hi' ? 'हिंदी' : 'मराठी'}
+          </button>
+        ))}
+      </div>
+
       <div className="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10">
-        {/* Left Column: Branding & Features overview */}
+        {/* Left Column: Branding & Features */}
         <div className="lg:col-span-5 space-y-6 text-center lg:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
@@ -73,12 +99,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 <School className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-black tracking-tight text-white">Oakridge Academy</h1>
-                <p className="text-xs text-indigo-300 font-medium">Enterprise Campus ERP & Learning Cloud</p>
+                <h1 className="text-2xl font-black tracking-tight text-white">{t.appName}</h1>
+                <p className="text-xs text-indigo-300 font-medium">{t.campusCloud}</p>
               </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Unified institutional management platform connecting Administration, Bursar & Accounts, Faculty, and Students with dedicated operational portals.
+              Unified institutional management platform connecting Administration, Bursar & Accounts, Faculty, and Students with isolated operational portals.
             </p>
           </div>
 
@@ -105,16 +131,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         {/* Right Column: Login Card & One-Click Role Switcher */}
         <div className="lg:col-span-7 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
           <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">Sign In to Your Campus Portal</h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Select your role preset for instant 1-click access, or log in with credentials.
-            </p>
+            <h2 className="text-xl font-bold text-white tracking-tight">{t.signInTitle}</h2>
+            <p className="text-xs text-slate-400 mt-1">{t.signInSubtitle}</p>
           </div>
 
           {/* Quick 1-Click Role Presets */}
           <div>
             <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2.5">
-              1-Click Fast Login by Role:
+              {t.quickLogin}
             </label>
             <div className="grid grid-cols-2 gap-2.5">
               {PRESET_USERS.map((user) => {
@@ -178,7 +202,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@oakridge.edu"
+                  placeholder={t.emailPlaceholder}
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
@@ -198,7 +222,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder={t.passwordPlaceholder}
                   className="w-full pl-9 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
                 <button
@@ -214,7 +238,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <div className="flex items-center justify-between text-[11px] text-slate-400">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" defaultChecked className="rounded bg-slate-950 border-slate-800 text-indigo-600" />
-                <span>Keep me signed in on this workstation</span>
+                <span>{t.keepSignedIn}</span>
               </label>
               <span className="font-mono text-emerald-400 flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" /> 256-bit SSL
@@ -225,7 +249,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               type="submit"
               className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all"
             >
-              <span>Authenticate & Access Dashboard</span>
+              <span>{t.loginButton}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -233,7 +257,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       </div>
 
       <footer className="mt-8 text-center text-xs text-slate-500 z-10">
-        Oakridge International Academy &bull; Multi-Role Campus ERP &bull; 2026 Academic Session
+        Oakridge International Academy &bull; English &bull; हिंदी &bull; मराठी &bull; 2026 Academic Session
       </footer>
     </div>
   );

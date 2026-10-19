@@ -29,6 +29,7 @@ import {
   INITIAL_TRANSPORT_ROUTES,
   INITIAL_LEAVES
 } from './data/mockData';
+import { Language } from './i18n/translations';
 import { LoginPage } from './components/LoginPage';
 import { Navbar } from './components/Navbar';
 import { Sidebar, NavTab } from './components/Sidebar';
@@ -52,6 +53,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(PRESET_USERS[0]);
   const [currentRole, setCurrentRole] = useState<UserRole>('admin');
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
+  const [currentLang, setCurrentLang] = useState<Language>('en');
 
   // Modals
   const [isReaSpecOpen, setIsReaSpecOpen] = useState(false);
@@ -84,7 +86,6 @@ export default function App() {
 
   const handleRoleChange = (role: UserRole) => {
     setCurrentRole(role);
-    // Find matching preset user for avatar and profile
     const matched = PRESET_USERS.find((u) => u.role === role);
     if (matched) {
       setCurrentUser(matched);
@@ -182,9 +183,15 @@ export default function App() {
     );
   };
 
-  // If logged out, render the login page
+  // If logged out, render the login page with language support
   if (!currentUser) {
-    return <LoginPage onLogin={handleLogin} />;
+    return (
+      <LoginPage
+        onLogin={handleLogin}
+        currentLang={currentLang}
+        onLanguageChange={setCurrentLang}
+      />
+    );
   }
 
   // Badges calculations
@@ -204,6 +211,8 @@ export default function App() {
         unreadNoticesCount={urgentNoticesCount}
         onOpenNotices={() => setActiveTab('notice-board')}
         onOpenReaSpec={() => setIsReaSpecOpen(true)}
+        currentLang={currentLang}
+        onLanguageChange={setCurrentLang}
       />
 
       {/* Main Workspace: Sidebar + Dynamic Module View */}
@@ -216,6 +225,7 @@ export default function App() {
           pendingHomeworkCount={pendingHomeworkCount}
           urgentNoticesCount={urgentNoticesCount}
           overdueInvoicesCount={overdueInvoicesCount}
+          currentLang={currentLang}
           onOpenRegisterStudent={() => setIsRegisterModalOpen(true)}
         />
 
@@ -239,6 +249,7 @@ export default function App() {
           {activeTab === 'students' && (
             <StudentDirectoryView
               currentRole={currentRole}
+              currentUser={currentUser}
               students={students}
               onOpenRegisterModal={() => setIsRegisterModalOpen(true)}
             />
@@ -254,6 +265,7 @@ export default function App() {
           {activeTab === 'attendance' && (
             <AttendanceView
               currentRole={currentRole}
+              currentUser={currentUser}
               students={students}
               staff={staff}
             />
@@ -262,6 +274,7 @@ export default function App() {
           {activeTab === 'accounting' && (
             <AccountingView
               currentRole={currentRole}
+              currentUser={currentUser}
               invoices={invoices}
               students={students}
               onUpdateInvoice={handleUpdateInvoice}
@@ -274,6 +287,7 @@ export default function App() {
           {activeTab === 'exams' && (
             <ExamView
               currentRole={currentRole}
+              currentUser={currentUser}
               exams={exams}
               scheduleItems={scheduleItems}
               students={students}
@@ -294,6 +308,7 @@ export default function App() {
           {activeTab === 'certification' && (
             <CertificationView
               currentRole={currentRole}
+              currentUser={currentUser}
               certificates={certificates}
               students={students}
               onIssueCertificate={handleIssueCertificate}
@@ -318,6 +333,7 @@ export default function App() {
           {activeTab === 'campus-services' && (
             <CampusServicesView
               currentRole={currentRole}
+              currentUser={currentUser}
               books={books}
               transportRoutes={transportRoutes}
               leaveApplications={leaves}

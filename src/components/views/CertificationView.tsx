@@ -11,10 +11,11 @@ import {
   X,
   ExternalLink
 } from 'lucide-react';
-import { Certificate, Student, UserRole } from '../../types/erp';
+import { Certificate, Student, UserRole, AuthUser } from '../../types/erp';
 
 interface CertificationViewProps {
   currentRole: UserRole;
+  currentUser: AuthUser | null;
   certificates: Certificate[];
   students: Student[];
   onIssueCertificate: (cert: Certificate) => void;
@@ -22,10 +23,14 @@ interface CertificationViewProps {
 
 export const CertificationView: React.FC<CertificationViewProps> = ({
   currentRole,
+  currentUser,
   certificates,
   students,
   onIssueCertificate
 }) => {
+  const isStudent = currentRole === 'student';
+  const myStudentId = currentUser?.studentId || 'std-1';
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCert, setSelectedCert] = useState<Certificate | null>(null);
   const [isIssuing, setIsIssuing] = useState(false);
@@ -36,7 +41,12 @@ export const CertificationView: React.FC<CertificationViewProps> = ({
   const [remarks, setRemarks] = useState('Bonafide student for official identification and visa processing.');
   const [signatory, setSignatory] = useState('Dr. Eleanor Vance, Principal');
 
-  const filteredCerts = certificates.filter(
+  // RBAC Data Isolation: Student only sees certificates issued to themselves
+  const accessibleCerts = isStudent
+    ? certificates.filter((c) => c.studentId === myStudentId)
+    : certificates;
+
+  const filteredCerts = accessibleCerts.filter(
     (c) =>
       c.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.certNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -73,14 +83,16 @@ export const CertificationView: React.FC<CertificationViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Award className="w-5 h-5 text-amber-400" />
-            Certifications & Official Credentials
+            {isStudent ? 'My Academic Certificates & TC Awards' : 'Certifications & Official Credentials'}
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Issue cryptographically verifiable Bonafide, Transfer Certificates (TC), Merit awards, and Transcripts.
+            {isStudent
+              ? 'Official Bonafide, Transfer Certificates, and Merit recognitions issued to your student record.'
+              : 'Issue cryptographically verifiable Bonafide, Transfer Certificates (TC), Merit awards, and Transcripts.'}
           </p>
         </div>
 
-        {currentRole !== 'student' && (
+        {!isStudent && (
           <button
             onClick={() => setIsIssuing(true)}
             className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold flex items-center gap-2 shadow-md shadow-amber-600/20 transition-all self-start sm:self-auto"
@@ -99,49 +111,55 @@ export const CertificationView: React.FC<CertificationViewProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search certificate # or student name..."
+            placeholder="Search certificate # or title..."
             className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           />
         </div>
-        <span className="text-xs text-slate-400">Total Issued: {certificates.length}</span>
+        <span className="text-xs text-slate-400">Total Available: {accessibleCerts.length}</span>
       </div>
 
       {/* Certificates Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {filteredCerts.map((cert) => (
-          <div
-            key={cert.id}
-            onClick={() => setSelectedCert(cert)}
-            className="bg-slate-900/70 border border-slate-800 rounded-xl p-5 hover:border-amber-500/50 hover:bg-slate-900 transition-all cursor-pointer flex flex-col justify-between group"
-          >
-            <div>
-              <div className="flex items-center justify-between text-xs mb-2">
-                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                  {cert.type}
-                </span>
-                <span className="font-mono text-slate-500 text-[11px]">{cert.issueDate}</span>
-              </div>
-
-              <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">
-                {cert.studentName}
-              </h4>
-              <p className="text-xs text-slate-400 mt-1 line-clamp-2">{cert.remarks}</p>
-
-              <div className="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                <span className="text-slate-500 font-mono">{cert.certNumber}</span>
-                <span className="text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Verified
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-2 flex items-center justify-between text-xs text-indigo-400 font-medium">
-              <span>View & Print Document</span>
-              <Printer className="w-3.5 h-3.5" />
-            </div>
+        {filteredCerts.length === 0 ? (
+          <div className="col-span-3 py-12 text-center text-slate-400 bg-slate-900/40 rounded-xl border border-dashed border-slate-800 text-xs">
+            No certificates found under this record.
           </div>
-        ))}
+        ) : (
+          filteredCerts.map((cert) => (
+            <div
+              key={cert.id}
+              onClick={() => setSelectedCert(cert)}
+              className="bg-slate-900/70 border border-slate-800 rounded-xl p-5 hover:border-amber-500/50 hover:bg-slate-900 transition-all cursor-pointer flex flex-col justify-between group"
+            >
+              <div>
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                    {cert.type}
+                  </span>
+                  <span className="font-mono text-slate-500 text-[11px]">{cert.issueDate}</span>
+                </div>
+
+                <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">
+                  {cert.studentName}
+                </h4>
+                <p className="text-xs text-slate-400 mt-1 line-clamp-2">{cert.remarks}</p>
+
+                <div className="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 font-mono">{cert.certNumber}</span>
+                  <span className="text-emerald-400 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Verified
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-2 flex items-center justify-between text-xs text-indigo-400 font-medium">
+                <span>View & Print Document</span>
+                <Printer className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Printable Certificate Modal */}
@@ -192,7 +210,7 @@ export const CertificationView: React.FC<CertificationViewProps> = ({
                 <div className="text-[10px] text-slate-500">Date: {selectedCert.issueDate}</div>
               </div>
 
-              {/* Verification Stamp / QR Representation */}
+              {/* Verification Stamp */}
               <div className="text-center flex flex-col items-center">
                 <div className="w-14 h-14 rounded-full border-2 border-amber-800/60 bg-amber-50/50 flex flex-col items-center justify-center p-1">
                   <ShieldCheck className="w-5 h-5 text-amber-800" />
@@ -265,13 +283,6 @@ export const CertificationView: React.FC<CertificationViewProps> = ({
                   onChange={(e) => {
                     const newType = e.target.value as Certificate['type'];
                     setCertType(newType);
-                    if (newType === 'Transfer Certificate') {
-                      setRemarks('Student has completed their syllabus with no pending dues and is officially relieved for relocation.');
-                    } else if (newType === 'Bonafide') {
-                      setRemarks('Bonafide enrolled regular student in active academic standing for administrative identification.');
-                    } else if (newType === 'Merit Certificate') {
-                      setRemarks('Awarded for exceptional scholastic distinction, peer leadership, and honors GPA.');
-                    }
                   }}
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                 >

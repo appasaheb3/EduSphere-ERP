@@ -17,11 +17,12 @@ import {
   ShieldAlert,
   X
 } from 'lucide-react';
-import { LibraryBook, TransportRoute, LeaveApplication, UserRole } from '../../types/erp';
+import { LibraryBook, TransportRoute, LeaveApplication, UserRole, AuthUser } from '../../types/erp';
 import { GRADE_10_TIMETABLE } from '../../data/mockData';
 
 interface CampusServicesViewProps {
   currentRole: UserRole;
+  currentUser: AuthUser | null;
   books: LibraryBook[];
   transportRoutes: TransportRoute[];
   leaveApplications: LeaveApplication[];
@@ -33,6 +34,7 @@ interface CampusServicesViewProps {
 
 export const CampusServicesView: React.FC<CampusServicesViewProps> = ({
   currentRole,
+  currentUser,
   books,
   transportRoutes,
   leaveApplications,
@@ -41,6 +43,9 @@ export const CampusServicesView: React.FC<CampusServicesViewProps> = ({
   onIssueBook,
   onReturnBook
 }) => {
+  const isStudent = currentRole === 'student';
+  const myStudentName = currentUser?.name || 'Aarav Sharma';
+
   const [activeSubTab, setActiveSubTab] = useState<'transport' | 'library' | 'leaves' | 'timetable'>('transport');
   const [searchBook, setSearchBook] = useState('');
   const [isApplyingLeave, setIsApplyingLeave] = useState(false);
@@ -58,15 +63,22 @@ export const CampusServicesView: React.FC<CampusServicesViewProps> = ({
       b.isbn.includes(searchBook)
   );
 
+  // RBAC Filter: Student only sees leaves applied by themselves
+  const displayedLeaves = isStudent
+    ? leaveApplications.filter(
+        (l) => l.applicantName === myStudentName || l.applicantRole === 'Student'
+      )
+    : leaveApplications;
+
   const handleLeaveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!leaveReason.trim()) return;
 
     const newLeave: LeaveApplication = {
       id: `lv-${Date.now()}`,
-      applicantName: currentRole === 'student' ? 'Aarav Sharma' : 'Faculty Member',
-      applicantRole: currentRole === 'student' ? 'Student' : 'Staff',
-      applicantId: 'usr-current',
+      applicantName: myStudentName,
+      applicantRole: isStudent ? 'Student' : 'Staff',
+      applicantId: currentUser?.id || 'usr-current',
       leaveType,
       startDate,
       endDate,
@@ -88,7 +100,7 @@ export const CampusServicesView: React.FC<CampusServicesViewProps> = ({
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Bus className="w-5 h-5 text-indigo-400" />
-            Campus Logistics & Essential ERP Services
+            Campus Logistics & Essential Services
           </h2>
           <p className="text-xs text-slate-400 mt-1">
             School bus fleet monitoring, digital library circulation, student leave applications, and class bell schedules.
@@ -122,7 +134,7 @@ export const CampusServicesView: React.FC<CampusServicesViewProps> = ({
             }`}
           >
             <FileCheck className="w-3.5 h-3.5" />
-            Leave Approvals ({leaveApplications.filter((l) => l.status === 'Pending').length})
+            {isStudent ? 'My Leave Requests' : `Leave Approvals (${leaveApplications.filter((l) => l.status === 'Pending').length})`}
           </button>
           <button
             onClick={() => setActiveSubTab('timetable')}
@@ -263,7 +275,9 @@ export const CampusServicesView: React.FC<CampusServicesViewProps> = ({
       {activeSubTab === 'leaves' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white">Student & Faculty Leave Applications</h3>
+            <h3 className="text-sm font-bold text-white">
+              {isStudent ? 'My Submitted Leave Requests' : 'Student & Faculty Leave Applications'}
+            </h3>
             <button
               onClick={() => setIsApplyingLeave(true)}
               className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-md shadow-indigo-600/20"
@@ -274,7 +288,7 @@ export const CampusServicesView: React.FC<CampusServicesViewProps> = ({
           </div>
 
           <div className="space-y-3">
-            {leaveApplications.map((leave) => (
+            {displayedLeaves.map((leave) => (
               <div
                 key={leave.id}
                 className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -308,7 +322,7 @@ export const CampusServicesView: React.FC<CampusServicesViewProps> = ({
                     {leave.status}
                   </span>
 
-                  {(currentRole === 'admin' || currentRole === 'staff') && leave.status === 'Pending' && (
+                  {!isStudent && (currentRole === 'admin' || currentRole === 'staff') && leave.status === 'Pending' && (
                     <div className="flex items-center gap-1.5 ml-2">
                       <button
                         onClick={() => onUpdateLeaveStatus(leave.id, 'Approved')}
