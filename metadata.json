@@ -1,0 +1,8 @@
+{
+  "name": "REA Project Builder & Repo Studio",
+  "description": "Build new web applications from GitHub repositories, REA (Reverse Engineer Anything) blueprints, and project starters.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
